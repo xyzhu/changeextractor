@@ -31,6 +31,7 @@ def get_change_number(patch,change_type):
     elif change_type=="time":
         return 1
     else:
+        print patch
         num_addline = len(re.findall("(?<=\n)\+.*\n",patch)) - len(re.findall("(?<=\n)\+\+\+.*\n",patch))
         num_delline = len(re.findall("(?<=\n)\-.*\n",patch)) - len(re.findall("(?<=\n)\-\-\-.*\n",patch))
         return num_addline+num_delline
@@ -61,11 +62,24 @@ def file_group(change_info):
     return change_info
 
 def save_result(change_info_group, file_path, change_type,repo_id):
-    if change_type=="bug":
-        f = open(file_path+"change_info_bug"+str(repo_id)+".csv",'a',)
-    elif change_type=="line":
-        f = open(file_path+"change_info_line"+str(repo_id)+".csv",'a',)
+    project_name = ""
+    if repo_id=="1":
+        project_name = "ant"
+    elif repo_id=="2":
+        project_name = "hibernate"
+    elif repo_id=="3":
+        project_name = "jedit"
+    elif repo_id=="4":
+        project_name = "eclipse"
+    elif repo_id=="6":
+        project_name = "spring"
     else:
-        f = open(file_path+"change_info_time"+str(repo_id)+".csv",'a',)
+        print "repository id not exist"
+    if change_type=="bug":
+        f = open(file_path+"bug_"+project_name+".csv",'w+',)
+    elif change_type=="line":
+        f = open(file_path+"line_"+project_name+".csv",'w+',)
+    else:
+        f = open(file_path+"time_"+project_name+".csv",'w+',)
     f.write(change_info_group+"\n")
     f.close
