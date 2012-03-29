@@ -18,9 +18,9 @@ class Metrics(object):
         for infile in glob.glob(change_file):
             change_info = open(infile, 'r').read()
             change_info_split = re.split("\n", change_info)
-            change_info_array = [[0 for i in range(0, 2)] for j in range(0, len(change_info_split)-2)]
-            
-        for i in range(0, len(change_info_split)-2):
+            num_file = len(change_info_split) -2
+            change_info_array = [[0 for i in range(0, 2)] for j in range(0, num_file)]
+        for i in range(0, num_file):
             change_info_line = re.split(",", change_info_split[i+1])
             change_info_array[i][0] = change_info_line[0]
             change_info_array[i][1] = change_info_line[1]
@@ -93,7 +93,7 @@ class Metrics(object):
         for infile in glob.glob(os.path.join(file + '.csv')):
             rank_metric = open(infile, 'r').read()
             rank_metric_split = re.split("\n", rank_metric)
-            num_files = len(rank_metric_split) - 1    
+            num_files = len(rank_metric_split) - 2    
             rank_metric_array = [["" for i in range(0, 3)] for j in range(0, num_files)]
             rank_metric_name = ""
             rank_metric_line = re.split(",",rank_metric_split[0])
@@ -101,7 +101,7 @@ class Metrics(object):
                 rank_metric_name += rank_metric_line[i]+","
             rank_metric_name += "OutReference"
             file_number = -1
-            for i in range(1, num_files):
+            for i in range(1, num_files+1):
                 rank_metric_line = re.split(",", rank_metric_split[i])
                 filefullname = rank_metric_line[0]
                 filefullnameparts = re.split("/",filefullname)
@@ -110,10 +110,10 @@ class Metrics(object):
                 for j in range(1,10):
                     metric_info += rank_metric_line[j]+","
                 metric_info += rank_metric_line[10]
+                file_number += 1
                 rank_metric_array[file_number][0] = filename
                 rank_metric_array[file_number][1] = filefullname
                 rank_metric_array[file_number][2] = metric_info
-                file_number += 1
         return (rank_metric_array,rank_metric_name)
     def get_change_metric(self,file):
         for infile in glob.glob(file):
@@ -147,7 +147,13 @@ class Metrics(object):
                     break
             return change,rank_info,oldchange
                 
-    def save_predict_file(self,change_info,understand_metric,stat_metric,rank_metric,change_metric,predict_file,predict_metric_name,change_type):
+
+    def save_predict_file(self, predict_file, change_type, predict_info):
+        f = open(predict_file + "_" + change_type + ".csv", 'w+')
+        f.write(predict_info)
+        f.close
+
+    def get_predict_info(self,change_info,understand_metric,stat_metric,rank_metric,change_metric,predict_metric_name):
         understand_metric.sort()
         stat_metric.sort()
         rank_metric.sort()
@@ -171,9 +177,7 @@ class Metrics(object):
                 pathname = understand_metric[i][1]
                 (change,rank_info,oldchange) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric)
                 predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_metric[i][2]+"\n"
-        f = open(predict_file+"_"+change_type+".csv",'w+',)
-        f.write(predict_info)
-        f.close
+        return predict_info
     def run(self,change_file,understand_file,stat_file,rank_file,changemetric_file,predict_file,change_type):
         change_info = self.get_change_info(change_file)        
         (understand_metric,understand_metric_name) = self.get_understand_metric(understand_file)
@@ -181,7 +185,8 @@ class Metrics(object):
         (rank_metric,rank_metric_name) = self.get_rank_metric(rank_file)
         change_metric = self.get_change_metric(changemetric_file)
         predict_metric_name = "File,Path,Change,Oldchange,"+rank_metric_name+","+stat_metric_name+","+understand_metric_name
-        self.save_predict_file(change_info,understand_metric,stat_metric,rank_metric,change_metric,predict_file,predict_metric_name,change_type)
+        predict_info = self.get_predict_info(change_info,understand_metric,stat_metric,rank_metric,change_metric,predict_metric_name)
+        self.save_predict_file(predict_file, change_type, predict_info)
 register_extension("Metrics", Metrics)
         
         

@@ -100,7 +100,7 @@ def main(argv):
         cnn = db.connect()
         cursor = cnn.cursor()
         if no_parse!=True:
-            change_info = extract_patch(cursor,db,start_time,end_time,repo_id,change_type,change_file_path,project_name)
+            change_info = extract_patch(cursor,db,start_time,end_time,repo_id,change_type)
             save_result(change_info, change_file_path, change_type,project_name)
         cnn.close()
         if extensions!=None:

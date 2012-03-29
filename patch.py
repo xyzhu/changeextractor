@@ -3,7 +3,7 @@
 import os
 import re
 
-def extract_patch(cursor,db,start_time,end_time,repo_id,change_type,change_file_path,project_name):
+def extract_patch(cursor,db,start_time,end_time,repo_id,change_type):
     if change_type=="bug":
         query = """select file_name,patch,type from actions,patches,scmlog,files 
                 where patches.file_id=actions.file_id and patches.commit_id
