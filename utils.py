@@ -58,3 +58,8 @@ def printerr(str='\n', args=None):
 
 def printdbg(str='\n', args=None):
     printout("DBG: " + str, args)
+
+def save_result(content,save_file):
+    f = open(save_file,'w+')
+    f.write(content)
+    f.close()

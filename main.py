@@ -5,9 +5,12 @@
 
 import sys
 import getopt
+from datetime import *
 from Database import *
-from patch import extract_patch,save_result
+from changelines import get_change_line
+from utils import save_result
 from ExtensionsManager import ExtensionsManager
+from changemetric import get_change_metric
 
 def _get_extensions_manager(extensions):
     try:
@@ -34,6 +37,8 @@ def main(argv):
     repo_id=None
     start_time = None
     end_time = None
+    start_datetime = None
+    end_datetime = None
     change_type = None
     change_file_path = None
     extensions = None
@@ -61,8 +66,12 @@ def main(argv):
             repo_id = value
         elif opt in("-s", "--start-time"):
             start_time = value
+            start_datetime = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S')
+            timespan = timedelta(days=-365)
+            previous_datetime = start_datetime + timespan
         elif opt in("-e","--end-time"):
             end_time = value
+            end_datetime = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S')
         elif opt in("-n"):
             no_parse = True
         elif opt in("-t","--changetype"):
@@ -90,8 +99,12 @@ def main(argv):
         project_name = "jedit"
     elif repo_id=="4":
         project_name = "eclipse"
+    elif repo_id=="5":
+        project_name="itext"
     elif repo_id=="6":
         project_name = "spring"
+    elif repo_id=="7":
+        project_name = "lucene"
     else:
         print "repository id not exist"
     
@@ -100,8 +113,12 @@ def main(argv):
         cnn = db.connect()
         cursor = cnn.cursor()
         if no_parse!=True:
-            change_info = extract_patch(cursor,db,start_time,end_time,repo_id,change_type)
-            save_result(change_info, change_file_path, change_type,project_name)
+            change_info = get_change_line(cursor,db,start_datetime,end_datetime,repo_id,change_type)
+            save_file = change_file_path+change_type+"_"+project_name+".csv"
+            save_result(change_info, save_file)
+            change_metric = get_change_metric(cursor,db,previous_datetime,start_datetime,repo_id,change_type)
+            changemetric_file = changemetric_file_path+change_type+"_"+project_name+".csv"
+            save_result(change_metric,changemetric_file)
         cnn.close()
         if extensions!=None:
             emg = _get_extensions_manager(extensions)
