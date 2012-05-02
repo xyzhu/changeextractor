@@ -32,29 +32,45 @@ class Metrics(object):
             for i in range(0, len(understand_metric_split)):
                 understand_metric_line = re.split(",", understand_metric_split[i])
                 kind = understand_metric_line[0]
-                if kind=="File":
+                if kind in ("Public Class","Public Static Class","Public Abstract Class","Public Static Abstract Class","Public Interface","Public Annotation","Class","Static Class","Abstract Class","Static Abstract Class","Interface","Public Enum Type","Enum Type"):
                     file_number+=1       
             understand_metric_array = [["" for i in range(0, 3)] for j in range(0, file_number)]
             understand_metric_name = ""
             understand_metric_line = re.split(",",understand_metric_split[0])
             for i in range(3,54):
-                if i not in(11,12,13,17,22,27,34,35,40,41,42,43,47,48,49):
+                if i not in(14,17,18,27,34,35,40,41,42,43,48):
                     understand_metric_name += understand_metric_line[i]+","
             understand_metric_name += "SumEssential"
             file_number = 0
             for i in range(1, len(understand_metric_split)):
                 understand_metric_line = re.split(",", understand_metric_split[i])
                 kind = understand_metric_line[0]
-                if kind=="File":
+                if kind in ("Public Class","Public Static Class","Public Abstract Class","Public Static Abstract Class","Public Interface","Public Annotation"):
                     filefullname = understand_metric_line[2]
                     filefullnameparts = re.split("/",filefullname)
                     filename = filefullnameparts[len(filefullnameparts)-1]
                     metric_info = ""
                     for j in range(3,54):
-                        if j not in(11,12,13,17,22,27,34,35,40,41,42,43,47,48,49):
+                        if j not in(14,17,18,27,34,35,40,41,42,43,48):
                             metric_info += understand_metric_line[j]+","
                     metric_info += understand_metric_line[54]
                     understand_metric_array[file_number][0] = filename
+                    understand_metric_array[file_number][1] = filefullname
+                    understand_metric_array[file_number][2] = metric_info
+                    file_number += 1
+                if kind in ("Class","Static Class","Abstract Class","Static Abstract Class","Interface","Public Enum Type","Enum Type"):
+                    classfullname = understand_metric_line[1]
+                    classfullnameparts = re.split("\.",classfullname)
+                    classname = classfullnameparts[len(classfullnameparts)-1]
+                    filefullname = understand_metric_line[2]
+                    filefullnameparts = re.split("/",filefullname)
+                    filename = filefullnameparts[len(filefullnameparts)-1]
+                    metric_info = ""
+                    for j in range(3,54):
+                        if j not in(14,17,18,27,34,35,40,41,42,43,48):
+                            metric_info += understand_metric_line[j]+","
+                    metric_info += understand_metric_line[54]
+                    understand_metric_array[file_number][0] = filename+'/'+classname
                     understand_metric_array[file_number][1] = filefullname
                     understand_metric_array[file_number][2] = metric_info
                     file_number += 1
@@ -65,7 +81,7 @@ class Metrics(object):
             totalstat = open(infile,'r').read()
             filestats = re.split(".+File Statistics.+\n", totalstat)
             stat_metric_array = [["" for i in range(0, 3)] for j in range(0, len(filestats)-1)]
-            stat_metric_name = "FuncDecl,Func,DeclStmt,Decl,Block,Call,Continue,Break,Return,For,If,Else,While,Do,Switch,Case,Param,Argu,Assign,ZeroOpAssign,ZeroOpcallAssign,ConstAssign,Class,Constructor,Try,Catch,Throw"
+            stat_metric_name = "DeclStmt,Decl,Block,Call,Continue,Break,Return,For,If,Else,While,Do,Switch,Case,Param,Argu,Assign,ZeroOpAssign,ZeroOpcallAssign,ConstAssign,Constructor,Try,Catch,Throw"
             for i in range(0,len(filestats)-1):
                 filestat = filestats[i+1]
                 lines = re.split("\n",filestat)
@@ -74,9 +90,9 @@ class Metrics(object):
                 filefullnameparts = re.split("/",filefullname)
                 filename = filefullnameparts[len(filefullnameparts)-1]
                 stat_info = ""
-                for j in range(6,len(lines)-4):
+                for j in range(8,len(lines)-4):
                     line = lines[j]
-                    if line!="" and j not in(11,12,24,26,32,33,34,35,36):
+                    if line!="" and j not in(11,12,24,26,32,33,34,35,36,37):
                         number = re.split(": ",line)[1]
                         stat_info=stat_info+number+","
                 line = lines[len(lines)-4]#after the last number, there is no ","
@@ -130,30 +146,40 @@ class Metrics(object):
             metric_info = ""
             for j in range(1,7):
                 metric_info += change_metric_line[j]+","
-            metric_info += change_metric_line[5]
+            metric_info += change_metric_line[7]
             change_metric_array[i][0] = file_name
             change_metric_array[i][1] = metric_info
         return (change_metric_array,change_metric_name)
-    def find_metric_info(self,filename,pathname,change_info,rank_metric,change_metric):
+    def find_metric_info(self,filename,pathname,change_info,rank_metric,change_metric,understand_metric):
             num_change = len(change_info)
             num_rank = len(rank_metric)
             num_oldchange = len(change_metric)
+            num_understand = len(understand_metric)
             change = "0"
             rank_info = "0,0,0,0,0,0,0,0,0,0"
             oldchange = "0,0,False,0,False,0,0"
+            understand_info = "0"
             for j in range(0,num_change):
                 if change_info[j][0]==filename:
                     change = change_info[j][1]
                     break
             for k in range(0,num_rank):
-                if rank_metric[k][1] == pathname:
+                if rank_metric[k][1] == "/home/xyzhu/change-prediction/"+pathname:
                     rank_info = rank_metric[k][2]
                     break
             for j in range(0,num_oldchange):
                 if change_metric[j][0]==filename:
                     oldchange = change_metric[j][1]
                     break
-            return change,rank_info,oldchange
+            for k in range(0,num_understand):  
+                if understand_metric[k][0]==filename:
+                    understand_info = understand_metric[k][2]
+                elif re.findall("/",understand_metric[k][0]):
+                    if re.split("/",understand_metric[k][0])[0]==filename and filename==re.split("/",understand_metric[k][0])[1]+".java":
+                        understand_info = understand_metric[k][2]
+            if understand_info=="0":
+                print "no understand---------"+pathname+"****************"+filename
+            return change,rank_info,oldchange,understand_info
                 
     def get_predict_info(self,change_info,understand_metric,stat_metric,rank_metric,change_metric,predict_metric_name):
         understand_metric.sort()
@@ -161,24 +187,27 @@ class Metrics(object):
         rank_metric.sort()
         change_info.sort()
         change_metric.sort()
-        num_understand_metric = len(understand_metric)
+        num_stat_metric = len(stat_metric)
         predict_info = predict_metric_name+"\n"
-        for i in range(0,num_understand_metric):
-            filename = understand_metric[i][0]
+        for i in range(0,num_stat_metric):
+            filename = stat_metric[i][0]
             if i==0:
-                if filename!=understand_metric[1][0]:
-                    pathname = understand_metric[i][1]
-                    (change,rank_info,oldchange) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric)
-                    predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_metric[i][2]+"\n"
-            elif i==num_understand_metric-1:
-                if filename!=understand_metric[num_understand_metric-1][0]:
-                    pathname = understand_metric[i][1]
-                    (change,rank_info,oldchange) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric)
-                    predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_metric[i][2]+"\n"
-            elif filename!=understand_metric[i-1][0] and filename!=understand_metric[i+1][0]:
-                pathname = understand_metric[i][1]
-                (change,rank_info,oldchange) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric)
-                predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_metric[i][2]+"\n"
+                if filename!=stat_metric[1][0]:
+                    pathname = stat_metric[i][1]
+                    (change,rank_info,oldchange,understand_info) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric,understand_metric)
+                    if understand_info!="0":
+                        predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_info+"\n"
+            elif i==num_stat_metric-1:
+                if filename!=stat_metric[num_stat_metric-1][0]:
+                    pathname = stat_metric[i][1]
+                    (change,rank_info,oldchange,understand_info) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric,understand_metric)
+                    if understand_info!="0":
+                        predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_info+"\n"
+            elif filename!=stat_metric[i-1][0] and filename!=understand_metric[i+1][0]:
+                pathname = stat_metric[i][1]
+                (change,rank_info,oldchange,understand_info) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric,understand_metric)
+                if understand_info!="0":
+                        predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_info+"\n"
         return predict_info
     def run(self,change_file,understand_file,stat_file,rank_file,changemetric_file,predict_file,change_type):
         change_lines = self.get_change_lines(change_file)        
