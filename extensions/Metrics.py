@@ -203,7 +203,7 @@ class Metrics(object):
                     (change,rank_info,oldchange,understand_info) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric,understand_metric)
                     if understand_info!="0":
                         predict_info += filename+","+pathname+","+change+","+oldchange+","+rank_info+","+stat_metric[i][2]+","+understand_info+"\n"
-            elif filename!=stat_metric[i-1][0] and filename!=understand_metric[i+1][0]:
+            elif filename!=stat_metric[i-1][0] and filename!=stat_metric[i+1][0]:
                 pathname = stat_metric[i][1]
                 (change,rank_info,oldchange,understand_info) = self.find_metric_info(filename, pathname, change_info, rank_metric,change_metric,understand_metric)
                 if understand_info!="0":
