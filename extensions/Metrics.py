@@ -111,7 +111,7 @@ class Metrics(object):
             rank_metric_array = [["" for i in range(0, 3)] for j in range(0, num_files)]
             rank_metric_name = ""
             rank_metric_line = re.split(",",rank_metric_split[0])
-            for i in range(1,10):
+            for i in range(1,8):
                 rank_metric_name += rank_metric_line[i]+","
             rank_metric_name += "OutReference"
             file_number = -1
@@ -121,9 +121,9 @@ class Metrics(object):
                 filefullnameparts = re.split("/",filefullname)
                 filename = filefullnameparts[len(filefullnameparts)-1]
                 metric_info = ""
-                for j in range(1,10):
+                for j in range(1,8):
                     metric_info += rank_metric_line[j]+","
-                metric_info += rank_metric_line[10]
+                metric_info += rank_metric_line[8]
                 file_number += 1
                 rank_metric_array[file_number][0] = filename
                 rank_metric_array[file_number][1] = filefullname
@@ -156,7 +156,7 @@ class Metrics(object):
             num_oldchange = len(change_metric)
             num_understand = len(understand_metric)
             change = "0"
-            rank_info = "0,0,0,0,0,0,0,0,0,0"
+            rank_info = "0,0,0,0,0,0,0,0"
             oldchange = "0,0,False,0,False,0,0"
             understand_info = "0"
             for j in range(0,num_change):
